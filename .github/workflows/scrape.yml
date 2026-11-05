@@ -1,0 +1,41 @@
+# El corazón del sistema: cada 3 horas consulta la DPEC y envía los avisos pendientes.
+name: Scrape
+
+on:
+  schedule:
+    # 8 veces por día. Cron usa UTC: equivale a las 00:17, 03:17, ... 21:17 en Corrientes (UTC-3).
+    # El minuto 17 evita la hora en punto, cuando GitHub tiene más demoras.
+    - cron: "17 */3 * * *"
+  workflow_dispatch: # Permite ejecutarlo a mano desde la pestaña Actions.
+
+permissions:
+  contents: read
+
+# Nunca dos ejecuciones a la vez: podrían enviar el mismo aviso dos veces.
+concurrency:
+  group: scrape
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e .
+      - name: Aplicar migraciones
+        run: alembic upgrade head
+      - name: Consultar la DPEC y avisar
+        run: dpec run

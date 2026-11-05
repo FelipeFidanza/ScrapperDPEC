@@ -1,0 +1,20 @@
+# PostgreSQL local para desarrollo y tests. Levantar con: docker compose up -d --wait db
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: dpec
+      POSTGRES_PASSWORD: dpec
+      POSTGRES_DB: dpec
+    ports:
+      - "127.0.0.1:54329:5432"
+    volumes:
+      - dpec-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dpec"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  dpec-db:

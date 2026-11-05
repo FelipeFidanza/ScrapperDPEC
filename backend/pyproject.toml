@@ -1,0 +1,46 @@
+[project]
+name = "scrapper-dpec"
+version = "0.1.0"
+description = "Avisa por email los cortes de luz programados que publica la DPEC (Corrientes, Argentina)."
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.20,<2",
+    "beautifulsoup4>=4.15,<5",
+    "fastapi>=0.162,<1",
+    "httpx>=0.28,<1",
+    "psycopg[binary]>=3.3,<4",
+    "pydantic>=2.14,<3",
+    "pydantic-settings>=2.16,<3",
+    "sqlmodel>=0.0.48,<0.1",
+    "tzdata>=2025.1",
+    "uvicorn>=0.40,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9,<10",
+    "respx>=0.23,<1",
+    "ruff>=0.17,<1",
+]
+
+[project.scripts]
+dpec = "scrapper_dpec.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/scrapper_dpec"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["db: requiere PostgreSQL (variable TEST_DATABASE_URL)"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
